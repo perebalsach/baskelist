@@ -14,16 +14,14 @@ El workflow `.github/workflows/pages.yml` publica `docs/`. Cal configurar **Sett
 
 ### Aplicació amb servidor i comptes familiars
 
-Requereix Python 3.11 o superior. Comandes per a Linux/macOS, des de l’arrel del repositori:
+Requereix [uv](https://docs.astral.sh/uv/getting-started/installation/). El projecte selecciona Python 3.12; `uv` gestiona Python, les dependències i l’entorn `.venv`. Comandes per a Linux/macOS, des de l’arrel del repositori:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python app.py
+uv sync --locked
+uv run app.py
 ```
 
-Obriu http://127.0.0.1:5000 i creeu un compte familiar. La contrasenya ha de tenir 12 caràcters o més. Base de dades SQLite i clau de sessió a `instance/`, exclosos del repositori. Per usar un altre port: `PORT=5001 python app.py`.
+Obriu http://127.0.0.1:5000 i creeu un compte familiar. La contrasenya ha de tenir 12 caràcters o més. Base de dades SQLite i clau de sessió a `instance/`, exclosos del repositori. Per usar un altre port: `PORT=5001 uv run app.py`.
 
 ## Importar un equip
 
@@ -51,8 +49,8 @@ La font FCBQ provada des de l’entorn de desenvolupament ha retornat una verifi
 ## Verificació
 
 ```bash
-pip install -r requirements-dev.txt
-python -m pytest -q
+uv sync --locked
+uv run --locked python -m pytest -q
 ```
 
 Proves d’importació, reimportació sense duplicats, importació invàlida atòmica, autenticació, CSRF i accés entre famílies. Les dues variants (Python i JavaScript) tenen importadors separats; manteniu-los alineats quan canviï l’HTML FCBQ.
@@ -62,3 +60,14 @@ Proves d’importació, reimportació sense duplicats, importació invàlida at�
 Aquesta versió amb servidor és un MVP local, no un servei públic acabat. GitHub Pages no executa Flask ni SQLite. Per als comptes reals cal un backend separat amb HTTPS, servidor WSGI, `SECRET_KEY` gestionada i `HTTPS_ONLY=1`; també verificació de correu, recuperació de contrasenya, eliminació/exportació de compte, còpies de seguretat, monitoratge i revisió de privacitat. No publiqueu `instance/` ni HTML privats.
 
 Vegeu `ROADMAP.md` per a les fases següents.
+
+## Dependències amb uv
+
+`pyproject.toml` declara les dependències i `uv.lock` en fixa la resolució. No cal activar manualment `.venv`. Les dependències de desenvolupament s’instal·len per defecte.
+
+- Afegir una dependència: `uv add paquet`
+- Afegir una eina de desenvolupament: `uv add --dev paquet`
+- Actualitzar les dependències dins dels límits declarats: `uv lock --upgrade` i `uv sync --locked`
+- Després d’un `git pull`: `uv sync --locked`
+
+Versioneu sempre junts els canvis de `pyproject.toml` i `uv.lock`. Les dependències amb versió exacta s’actualitzen explícitament amb `uv add paquet==nova_versio`.
